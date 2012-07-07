@@ -1,0 +1,1 @@
+Simple PHP Color Library
