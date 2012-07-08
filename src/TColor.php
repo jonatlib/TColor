@@ -636,7 +636,6 @@ class TColor {
                 // F
                 preg_match_all('/[0-9.]+/', $string, $data);
                 $data = current($data);
-                $data = current($data);
                 return self::fromFloat(floatval($data[0]), floatval($data[1]), floatval($data[2]), 1.0);
                 ///////////////////////////////////////////////////////////////////
             } else if (preg_match('/^(FA|fa)\([0-9.]+f?,[0-9.]+f?,[0-9.]+f?,[0-9.]+f?\)$/', $string, $data) > 0) {
