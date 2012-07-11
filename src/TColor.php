@@ -12,6 +12,17 @@ class TColor_NotImplemented extends Exception {
 }
 
 /**
+ * Exception for non exists methods 
+ */
+class TColor_MethodNotFound extends Exception {
+
+    public function __construct($message) {
+        parent::__construct("This functionality not exists.\n Method:" . $message);
+    }
+
+}
+
+/**
  * Exception for mishmashed input format 
  */
 class TColor_MishmashedFormat extends Exception {
@@ -636,6 +647,7 @@ class TColor {
                 // F
                 preg_match_all('/[0-9.]+/', $string, $data);
                 $data = current($data);
+                $data = current($data);
                 return self::fromFloat(floatval($data[0]), floatval($data[1]), floatval($data[2]), 1.0);
                 ///////////////////////////////////////////////////////////////////
             } else if (preg_match('/^(FA|fa)\([0-9.]+f?,[0-9.]+f?,[0-9.]+f?,[0-9.]+f?\)$/', $string, $data) > 0) {
@@ -711,12 +723,46 @@ class TColor {
                 // random
                 return self::fromRandom();
                 ///////////////////////////////////////////////////////////////////
+            } else if (preg_match('/^(.*)\|(.*)$/', $string, $data) > 0) {
+                //
+                preg_match_all('/(.*)/', $string, $data);
+                $data = explode('|', current(current($data)));
+                $color = array_shift($data);
+                foreach ($data as $d) {
+                    $color = self::doRutine($color, $d);
+                }
+                return $color;
+                ///////////////////////////////////////////////////////////////////
 //            } else if (preg_match('/^$/', $string, $data) > 0) {
 //                //
 //                ///////////////////////////////////////////////////////////////////
             }
         }
         throw new TColor_MishmashedFormat('Format was not recognized. Input:' . (string) $string . (is_object($string) ? ' Class:' . get_class($string) : ''));
+    }
+
+    /**
+     * Method to run method on color
+     * @param type $color
+     * @param type $rutine 
+     */
+    public static function doRutine($color, $rutine) {
+        $color = self::factory($color);
+        switch (strtolower($rutine)) {
+            case 'gray': $color = $color->getGrayColor();
+                break;
+            case 'contrast': $color = $color->contrastColor();
+                break;
+//            case '': $color->; break;
+
+            default:
+                if (method_exists($color, $rutine)) {
+                    $color->$rutine();
+                } else {
+                    throw new TColor_MethodNotFound($rutine);
+                }
+        }
+        return $color;
     }
 
     ////////////////////////////////////////////////////////
@@ -1110,7 +1156,7 @@ class TColor {
     ////////////////// Instance members ////////////////////
     ////////////////////////////////////////////////////////
     ////////////////// Private Members /////////////////////
-    private $_r = 0.0, $_g = 0.0, $_b = 0.0, $_a = 1.0;
+            private $_r = 0.0, $_g = 0.0, $_b = 0.0, $_a = 1.0;
 
     /**
      * Tokenize output string.
@@ -1135,6 +1181,7 @@ class TColor {
             $tokens[] = $text;
         return $tokens;
     }
+
     /**
      * Process tokens to fit color in defined format
      * @param type $tokens
@@ -1238,6 +1285,7 @@ class TColor {
         ));
         return $this;
     }
+
     /**
      * Sub color from this
      * @param type $color
@@ -1254,6 +1302,7 @@ class TColor {
         ));
         return $this;
     }
+
     /**
      * Multiply this color by different color
      * @param type $color
@@ -1270,6 +1319,7 @@ class TColor {
         ));
         return $this;
     }
+
     /**
      * Divide this color by different color
      * @param type $color
@@ -1286,6 +1336,7 @@ class TColor {
         ));
         return $this;
     }
+
     /**
      * Dot product of this color and $color
      * @param type $color
@@ -1300,6 +1351,7 @@ class TColor {
         $dot += $this->getB($full) * $color->getB($full);
         return $dot;
     }
+
     /**
      * Cross product of this color and $color
      * @param type $color
@@ -1315,6 +1367,7 @@ class TColor {
         ));
         return $this;
     }
+
     /**
      * Set min brightness if this brightness is smaller it is set to $f
      * @param type $f
@@ -1326,6 +1379,7 @@ class TColor {
         $this->setHSV($color);
         return $this;
     }
+
     /**
      * Set min saturation if this saturation is smaller it is set to $f
      * @param type $f
@@ -1337,6 +1391,7 @@ class TColor {
         $this->setHSV($color);
         return $this;
     }
+
     /**
      * Set max brightness if this brightness is higher it is set to $f
      * @param type $f
@@ -1348,6 +1403,7 @@ class TColor {
         $this->setHSV($color);
         return $this;
     }
+
     /**
      * Set max saturation if this saturation is higher it is set to $f
      * @param type $f
@@ -1359,6 +1415,7 @@ class TColor {
         $this->setHSV($color);
         return $this;
     }
+
     /**
      * Set brightness - value of color
      * @param type $f
@@ -1370,6 +1427,7 @@ class TColor {
         $this->setHSV($color);
         return $this;
     }
+
     /**
      * Set hue
      * @param type $f
@@ -1381,6 +1439,7 @@ class TColor {
         $this->setHSV($color);
         return $this;
     }
+
     /**
      * Set saturation
      * @param type $f
@@ -1392,6 +1451,7 @@ class TColor {
         $this->setHSV($color);
         return $this;
     }
+
     /**
      * Get brightness - value
      * @return type 
@@ -1400,6 +1460,7 @@ class TColor {
         $color = TColor_Convertor::RGBtoHSV($this->getRGB());
         return $color['v'];
     }
+
     /**
      * Get hue
      * @return type 
@@ -1408,6 +1469,7 @@ class TColor {
         $color = TColor_Convertor::RGBtoHSV($this->getRGB());
         return $color['h'];
     }
+
     /**
      * Get saturation
      * @return type 
@@ -1416,6 +1478,7 @@ class TColor {
         $color = TColor_Convertor::RGBtoHSV($this->getRGB());
         return $color['s'];
     }
+
     /**
      * Convert color to grayscale and return - it's not changing this color
      * @param type $r
@@ -1428,6 +1491,7 @@ class TColor {
         $color = $color / ($r + $g + $b);
         return self::factory((float) $color);
     }
+
     /**
      * Average this color and $colors
      * @param type $color
@@ -1444,6 +1508,7 @@ class TColor {
             return $this->addColor($color)->divideColor((float) 2.0);
         }
     }
+
     /**
      * Inverse this color
      * @param type $full
@@ -1458,6 +1523,7 @@ class TColor {
         ));
         return $this;
     }
+
     /**
      * Inverse hue of this color
      * @return \TColor 
@@ -1466,6 +1532,7 @@ class TColor {
         $this->setHue($this->getHue() + 0.5);
         return $this;
     }
+
     /**
      * Get contrast color to this - it's not changing this color
      * @param type $sat - saturation
@@ -1491,6 +1558,7 @@ class TColor {
         }
         return $color;
     }
+
     /**
      * Get length of color vector wihout alpha channel
      * @param type $full
@@ -1503,6 +1571,7 @@ class TColor {
         $f += $this->getB($full) * $this->getB($full);
         return sqrt($f);
     }
+
     /**
      * Return true if this color is gray
      * @return boolean 
@@ -1513,6 +1582,7 @@ class TColor {
         }
         return false;
     }
+
     /**
      * Return weight length of color vector wihout alpha channel
      * @param type $full
@@ -1525,6 +1595,7 @@ class TColor {
         $f += 114.0 * $this->getB($full) * $this->getB($full);
         return sqrt($f);
     }
+
     /**
      * Get contrast of this color and $color alias for brightnessDifference
      * @see brightnessDifference
@@ -1534,6 +1605,7 @@ class TColor {
     public function getContrast($color) {
         return $this->brightnessDifference($color);
     }
+
     /**
      * Get color difference
      * @param type $color
@@ -1548,6 +1620,7 @@ class TColor {
         $result += max($c1['b'], $c2['b']) - min($c1['b'], $c2['b']);
         return $result;
     }
+
     /**
      * Get color bright difference - contrast
      * @param type $color
@@ -1560,6 +1633,7 @@ class TColor {
         $b2 = (299.0 * $c2['r'] + 587.0 * $c2['g'] + 114.0 * $c2['b']) / 1000.0;
         return abs($b1 - $b2);
     }
+
     /**
      * Get luminosity difference in HSL
      * @param type $color
@@ -1592,6 +1666,7 @@ class TColor {
     public function toString($format = TColor::FORMAT_HEXA) {
         return $this->_processTokens($this->_tokenize($format));
     }
+
     /**
      * Magic method to be able echo this object or convert it to string
      * @return string 
@@ -1617,6 +1692,7 @@ class TColor {
             return 0.0;
         return $this->_r;
     }
+
     /**
      * set R
      * @param type $_r 
@@ -1624,6 +1700,7 @@ class TColor {
     public function setR($_r) {
         $this->_r = (float) $_r;
     }
+
     /**
      * get G
      * @param type $true
@@ -1636,6 +1713,7 @@ class TColor {
             return 0.0;
         return $this->_g;
     }
+
     /**
      * set G
      * @param type $_g \
@@ -1643,6 +1721,7 @@ class TColor {
     public function setG($_g) {
         $this->_g = (float) $_g;
     }
+
     /**
      * get B
      * @param type $true
@@ -1655,6 +1734,7 @@ class TColor {
             return 0.0;
         return $this->_b;
     }
+
     /**
      * set B
      * @param type $_b 
@@ -1662,6 +1742,7 @@ class TColor {
     public function setB($_b) {
         $this->_b = (float) $_b;
     }
+
     /**
      * get A
      * @param type $true
@@ -1672,6 +1753,7 @@ class TColor {
             return 1.0;
         return $this->_a;
     }
+
     /**
      * set A
      * @param type $_a 
@@ -1679,6 +1761,7 @@ class TColor {
     public function setA($_a) {
         $this->_a = (float) $_a;
     }
+
     /**
      * Set All colors in float format array(r => X, g => X, b => X, a => X)
      * @param array $r
@@ -1691,6 +1774,7 @@ class TColor {
         $this->_a = (float) (isset($r['a'])) ? $r['a'] : 1.0;
         return $this;
     }
+
     /**
      * Set All colors in RGBA 0 - 255 format array(r => X, g => X, b => X, a => X)
      * @param array $color
@@ -1699,6 +1783,7 @@ class TColor {
     public function setRGB(array $color) {
         return $this->setFloat(TColor_Convertor::RGBtoFloat($color));
     }
+
     /**
      * Set All colors in float HSV format array(r => X, g => X, b => X, a => X)
      * @param array $color
@@ -1707,6 +1792,7 @@ class TColor {
     public function setHSV(array $color) {
         return $this->setFloat(TColor_Convertor::RGBtoFloat(TColor_Convertor::HSVtoRGB($color)));
     }
+
     /**
      * Get Array of RGB 0 - 255
      * @return type 
@@ -1719,6 +1805,7 @@ class TColor {
                     'a' => $this->getA(),
                 ));
     }
+
     /**
      * Get Array of CMYK
      * @return type 
@@ -1731,6 +1818,7 @@ class TColor {
                             'a' => $this->getA(),
                         )));
     }
+
     /**
      * Get Array of HSV
      * @return type 
@@ -1743,6 +1831,7 @@ class TColor {
                             'a' => $this->getA(),
                         )));
     }
+
     /**
      * Get Array of LAB
      * @return type 
@@ -1755,6 +1844,7 @@ class TColor {
                             'a' => $this->getA(),
                         )));
     }
+
     /**
      * Get Array of HEX
      * @return type 
@@ -1767,6 +1857,7 @@ class TColor {
                             'a' => $this->getA(),
                         )));
     }
+
     /**
      * Get Array of floats
      * @return type 
@@ -1825,6 +1916,7 @@ class TColor {
  */
 class TColor_Text {
     //Formats
+
     const FORMAT_BACKGROUND = 'BG';
     const FORMAT_COLOR = 'CL';
     const FORMAT_COLOR_BACKGROUND = 'CLBG';
@@ -1846,6 +1938,7 @@ class TColor_Text {
             $result = $result->sortColors($sorting);
         return $result;
     }
+
     /**
      * Generate random colorized text
      * @param type $text
@@ -1862,6 +1955,7 @@ class TColor_Text {
     private $text = '';
     private $colors = array();
     private $delimiter = null;
+
     /**
      * Convert object to string in format
      * @param type $format
@@ -1894,6 +1988,7 @@ class TColor_Text {
         }
         return $result;
     }
+
     /**
      * Convert object to string magic method
      * @return string 
@@ -1905,6 +2000,7 @@ class TColor_Text {
         }
         return $data;
     }
+
     /**
      * Manipulate with all colors, set bright etc. @see TColor
      * @param type $name
@@ -1917,6 +2013,7 @@ class TColor_Text {
         }
         return $this;
     }
+
     /**
      * Sort colors - sorting algorythm ( hue | sat | val | wei | len )
      * @param type $sorting
@@ -1957,6 +2054,7 @@ class TColor_Text {
         }
         return $this;
     }
+
     /**
      * Construct
      * @param type $color
